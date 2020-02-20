@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { createEditor, Transforms, Editor, Text } from "slate";
-import Leaf from "./Leaf";
+import { CodeElement, DefaultElement, Leaf } from "../components";
+
 import { Slate, Editable, withReact } from "slate-react";
 
 const TextEditor = () => {
@@ -29,6 +30,19 @@ const TextEditor = () => {
         );
         break;
       }
+      case "'": {
+        event.preventDefault();
+        const [match] = Editor.nodes(editor, {
+          match: n => n.type === "code"
+        });
+
+        Transforms.setNodes(
+          editor,
+          { type: match ? "paragraph" : "code" },
+          { match: n => Editor.isBlock(editor, n) }
+        );
+        break;
+      }
       default:
         return;
     }
@@ -38,10 +52,20 @@ const TextEditor = () => {
     return <Leaf {...props} />;
   }, []);
 
+  const renderElement = useCallback(props => {
+    switch (props.element.type) {
+      case "code":
+        return <CodeElement {...props} />;
+      default:
+        return <DefaultElement {...props} />;
+    }
+  }, []);
+
   return (
     <Slate editor={editor} value={value} onChange={value => setValue(value)}>
       <Editable
         renderLeaf={renderLeaf}
+        renderElement={renderElement}
         onKeyDown={event => {
           onKeyDown(event);
         }}
