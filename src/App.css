@@ -1,3 +1,9 @@
 .App {
-  text-align: center;
+  color: black;
+  max-width: 740px;
+  background-color: white;
+  box-shadow: rgba(118, 143, 255, 0.1) 0px 16px 24px 0px;
+  padding: 40px;
+  margin: 65px auto 45px;
+  border-radius: 4.5px;
 }
