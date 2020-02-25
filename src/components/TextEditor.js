@@ -1,8 +1,20 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { createEditor, Transforms, Editor, Text } from "slate";
-import { CodeElement, DefaultElement, Leaf } from "../components";
+import {
+  CodeElement,
+  DefaultElement,
+  Leaf,
+  FormatToolbar
+} from "../components";
 
 import { Slate, Editable, withReact } from "slate-react";
+
+import Icon from "react-icons-kit";
+import { bold } from "react-icons-kit/feather/bold";
+import { italic } from "react-icons-kit/feather/italic";
+import { underline } from "react-icons-kit/feather/underline";
+import { list } from "react-icons-kit/feather/list";
+import { code } from "react-icons-kit/feather/code";
 
 const TextEditor = () => {
   const editor = useMemo(() => withReact(createEditor()), []);
@@ -19,15 +31,17 @@ const TextEditor = () => {
     switch (event.key) {
       case "b": {
         event.preventDefault();
-        const [match] = Editor.nodes(editor, {
-          match: n => n.bold
-        });
-
-        Transforms.setNodes(
-          editor,
-          { bold: match ? false : true },
-          { match: n => Text.isText(n), split: true }
-        );
+        toggleMark("bold");
+        break;
+      }
+      case "i": {
+        event.preventDefault();
+        toggleMark("italic");
+        break;
+      }
+      case "s": {
+        event.preventDefault();
+        toggleMark("underline");
         break;
       }
       case "'": {
@@ -48,6 +62,26 @@ const TextEditor = () => {
     }
   };
 
+  const onMarkClick = (e, type) => {
+    e.preventDefault();
+    toggleMark(type);
+  };
+
+  const toggleMark = useCallback(
+    mark => {
+      const [match] = Editor.nodes(editor, {
+        match: n => n[mark]
+      });
+
+      Transforms.setNodes(
+        editor,
+        { [mark]: match ? false : true },
+        { match: n => Text.isText(n), split: true }
+      );
+    },
+    [editor]
+  );
+
   const renderLeaf = useCallback(props => {
     return <Leaf {...props} />;
   }, []);
@@ -63,6 +97,38 @@ const TextEditor = () => {
 
   return (
     <Slate editor={editor} value={value} onChange={value => setValue(value)}>
+      <FormatToolbar>
+        <button
+          onPointerDown={e => onMarkClick(e, "bold")}
+          className="tooltip-icon-button"
+        >
+          <Icon icon={bold} />
+        </button>
+        <button
+          onPointerDown={e => onMarkClick(e, "italic")}
+          className="tooltip-icon-button"
+        >
+          <Icon icon={italic} />
+        </button>
+        <button
+          onPointerDown={e => onMarkClick(e, "underline")}
+          className="tooltip-icon-button"
+        >
+          <Icon icon={underline} />
+        </button>
+        <button
+          onPointerDown={e => onMarkClick(e, "code")}
+          className="tooltip-icon-button"
+        >
+          <Icon icon={code} />
+        </button>
+        <button
+          onPointerDown={e => onMarkClick(e, "list")}
+          className="tooltip-icon-button"
+        >
+          <Icon icon={list} />
+        </button>
+      </FormatToolbar>
       <Editable
         renderLeaf={renderLeaf}
         renderElement={renderElement}
