@@ -4,17 +4,20 @@ import {
   CodeElement,
   DefaultElement,
   Leaf,
-  FormatToolbar
+  FormatToolbar,
+  OrderedListElement,
+  UnorderedListElement
 } from "../components";
 
 import { Slate, Editable, withReact } from "slate-react";
 
 import Icon from "react-icons-kit";
-import { bold } from "react-icons-kit/feather/bold";
-import { italic } from "react-icons-kit/feather/italic";
-import { underline } from "react-icons-kit/feather/underline";
-import { list } from "react-icons-kit/feather/list";
-import { code } from "react-icons-kit/feather/code";
+import { ic_format_bold } from "react-icons-kit/md/ic_format_bold";
+import { ic_format_italic } from "react-icons-kit/md/ic_format_italic";
+import { ic_format_underlined } from "react-icons-kit/md/ic_format_underlined";
+import { ic_format_list_numbered } from "react-icons-kit/md/ic_format_list_numbered";
+import { ic_format_list_bulleted } from "react-icons-kit/md/ic_format_list_bulleted";
+import { ic_code } from "react-icons-kit/md/ic_code";
 
 const TextEditor = () => {
   const editor = useMemo(() => withReact(createEditor()), []);
@@ -24,6 +27,8 @@ const TextEditor = () => {
       children: [{ text: "A line of text in a paragraph" }]
     }
   ]);
+
+  const defaultIconSize = 26;
 
   const onKeyDown = event => {
     if (!event.ctrlKey) return;
@@ -39,22 +44,24 @@ const TextEditor = () => {
         toggleMark("italic");
         break;
       }
-      case "s": {
+      case "u": {
         event.preventDefault();
         toggleMark("underline");
         break;
       }
       case "'": {
         event.preventDefault();
-        const [match] = Editor.nodes(editor, {
-          match: n => n.type === "code"
-        });
-
-        Transforms.setNodes(
-          editor,
-          { type: match ? "paragraph" : "code" },
-          { match: n => Editor.isBlock(editor, n) }
-        );
+        transformElement("code");
+        break;
+      }
+      case "o": {
+        event.preventDefault();
+        transformElement("orList");
+        break;
+      }
+      case "l": {
+        event.preventDefault();
+        transformElement("unList");
         break;
       }
       default:
@@ -65,6 +72,23 @@ const TextEditor = () => {
   const onMarkClick = (e, type) => {
     e.preventDefault();
     toggleMark(type);
+  };
+
+  const onElementClick = (e, type) => {
+    e.preventDefault();
+    transformElement(type);
+  };
+
+  const transformElement = element => {
+    const [match] = Editor.nodes(editor, {
+      match: n => n.type === element
+    });
+
+    Transforms.setNodes(
+      editor,
+      { type: match ? "default" : element },
+      { match: n => Editor.isBlock(editor, n) }
+    );
   };
 
   const toggleMark = useCallback(
@@ -90,6 +114,10 @@ const TextEditor = () => {
     switch (props.element.type) {
       case "code":
         return <CodeElement {...props} />;
+      case "orList":
+        return <OrderedListElement {...props} />;
+      case "unList":
+        return <UnorderedListElement {...props} />;
       default:
         return <DefaultElement {...props} />;
     }
@@ -102,31 +130,37 @@ const TextEditor = () => {
           onPointerDown={e => onMarkClick(e, "bold")}
           className="tooltip-icon-button"
         >
-          <Icon icon={bold} />
+          <Icon size={defaultIconSize} icon={ic_format_bold} />
         </button>
         <button
           onPointerDown={e => onMarkClick(e, "italic")}
           className="tooltip-icon-button"
         >
-          <Icon icon={italic} />
+          <Icon size={defaultIconSize} icon={ic_format_italic} />
         </button>
         <button
           onPointerDown={e => onMarkClick(e, "underline")}
           className="tooltip-icon-button"
         >
-          <Icon icon={underline} />
+          <Icon size={defaultIconSize} icon={ic_format_underlined} />
         </button>
         <button
-          onPointerDown={e => onMarkClick(e, "code")}
+          onPointerDown={e => onElementClick(e, "code")}
           className="tooltip-icon-button"
         >
-          <Icon icon={code} />
+          <Icon size={defaultIconSize} icon={ic_code} />
         </button>
         <button
-          onPointerDown={e => onMarkClick(e, "list")}
+          onPointerDown={e => onElementClick(e, "orList")}
           className="tooltip-icon-button"
         >
-          <Icon icon={list} />
+          <Icon size={defaultIconSize} icon={ic_format_list_numbered} />
+        </button>
+        <button
+          onPointerDown={e => onElementClick(e, "unList")}
+          className="tooltip-icon-button"
+        >
+          <Icon size={defaultIconSize} icon={ic_format_list_bulleted} />
         </button>
       </FormatToolbar>
       <Editable
