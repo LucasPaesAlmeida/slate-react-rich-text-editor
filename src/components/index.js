@@ -5,6 +5,7 @@ import DefaultElement from "./DefaultElement";
 import FormatToolbar from "./FormatToolbar/";
 import OrderedListElement from "./OrderedListElement";
 import UnorderedListElement from "./UnorderedListElement";
+import ListItem from "./ListElement";
 
 export {
   TextEditor,
@@ -13,5 +14,6 @@ export {
   DefaultElement,
   FormatToolbar,
   OrderedListElement,
-  UnorderedListElement
+  UnorderedListElement,
+  ListItem
 };

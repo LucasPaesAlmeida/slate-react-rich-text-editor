@@ -6,7 +6,8 @@ import {
   Leaf,
   FormatToolbar,
   OrderedListElement,
-  UnorderedListElement
+  UnorderedListElement,
+  ListItem
 } from "../components";
 
 import { Slate, Editable, withReact } from "slate-react";
@@ -24,11 +25,12 @@ const TextEditor = () => {
   const [value, setValue] = useState([
     {
       type: "paragraph",
-      children: [{ text: "A line of text in a paragraph" }]
+      children: [{ text: "" }]
     }
   ]);
 
   const defaultIconSize = 26;
+  const LIST_TYPES = ["ordered-list", "bulleted-list"];
 
   const onKeyDown = event => {
     if (!event.ctrlKey) return;
@@ -51,17 +53,17 @@ const TextEditor = () => {
       }
       case "'": {
         event.preventDefault();
-        transformElement("code");
+        transformBlock("code");
         break;
       }
       case "o": {
         event.preventDefault();
-        transformElement("orList");
+        transformBlock("ordered-list");
         break;
       }
       case "l": {
         event.preventDefault();
-        transformElement("unList");
+        transformBlock("bulleted-list");
         break;
       }
       default:
@@ -76,19 +78,29 @@ const TextEditor = () => {
 
   const onElementClick = (e, type) => {
     e.preventDefault();
-    transformElement(type);
+    transformBlock(type);
   };
 
-  const transformElement = element => {
+  const transformBlock = element => {
     const [match] = Editor.nodes(editor, {
       match: n => n.type === element
     });
 
+    const isList = LIST_TYPES.includes(element);
+
+    Transforms.unwrapNodes(editor, {
+      match: n => LIST_TYPES.includes(n.type),
+      split: true
+    });
+
     Transforms.setNodes(
       editor,
-      { type: match ? "default" : element },
+      { type: match ? "default" : isList ? "list-item" : element },
       { match: n => Editor.isBlock(editor, n) }
     );
+
+    if (!match && isList)
+      Transforms.wrapNodes(editor, { type: element, children: [] });
   };
 
   const toggleMark = useCallback(
@@ -114,10 +126,12 @@ const TextEditor = () => {
     switch (props.element.type) {
       case "code":
         return <CodeElement {...props} />;
-      case "orList":
+      case "ordered-list":
         return <OrderedListElement {...props} />;
-      case "unList":
+      case "bulleted-list":
         return <UnorderedListElement {...props} />;
+      case "list-item":
+        return <ListItem {...props} />;
       default:
         return <DefaultElement {...props} />;
     }
@@ -151,19 +165,21 @@ const TextEditor = () => {
           <Icon size={defaultIconSize} icon={ic_code} />
         </button>
         <button
-          onPointerDown={e => onElementClick(e, "orList")}
+          onPointerDown={e => onElementClick(e, "ordered-list")}
           className="tooltip-icon-button"
         >
           <Icon size={defaultIconSize} icon={ic_format_list_numbered} />
         </button>
         <button
-          onPointerDown={e => onElementClick(e, "unList")}
+          onPointerDown={e => onElementClick(e, "bulleted-list")}
           className="tooltip-icon-button"
         >
           <Icon size={defaultIconSize} icon={ic_format_list_bulleted} />
         </button>
       </FormatToolbar>
       <Editable
+        placeholder="Digite o seu texto."
+        spellCheck
         renderLeaf={renderLeaf}
         renderElement={renderElement}
         onKeyDown={event => {
