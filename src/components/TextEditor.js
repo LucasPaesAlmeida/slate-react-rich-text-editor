@@ -29,45 +29,24 @@ const TextEditor = () => {
     }
   ]);
 
-  const defaultIconSize = 26;
+  const HOTKEYS = {
+    b: () => toggleMark("bold"),
+    i: () => toggleMark("italic"),
+    u: () => toggleMark("underline"),
+    "'": () => transformBlock("code"),
+    o: () => transformBlock("ordered-list"),
+    l: () => transformBlock("bulleted-list")
+  };
+
+  const DEFAULT_ICON_SIZE = 26;
   const LIST_TYPES = ["ordered-list", "bulleted-list"];
 
   const onKeyDown = event => {
     if (!event.ctrlKey) return;
 
-    switch (event.key) {
-      case "b": {
-        event.preventDefault();
-        toggleMark("bold");
-        break;
-      }
-      case "i": {
-        event.preventDefault();
-        toggleMark("italic");
-        break;
-      }
-      case "u": {
-        event.preventDefault();
-        toggleMark("underline");
-        break;
-      }
-      case "'": {
-        event.preventDefault();
-        transformBlock("code");
-        break;
-      }
-      case "o": {
-        event.preventDefault();
-        transformBlock("ordered-list");
-        break;
-      }
-      case "l": {
-        event.preventDefault();
-        transformBlock("bulleted-list");
-        break;
-      }
-      default:
-        return;
+    if (HOTKEYS[event.key] !== undefined) {
+      event.preventDefault();
+      HOTKEYS[event.key]();
     }
   };
 
@@ -144,37 +123,37 @@ const TextEditor = () => {
           onPointerDown={e => onMarkClick(e, "bold")}
           className="tooltip-icon-button"
         >
-          <Icon size={defaultIconSize} icon={ic_format_bold} />
+          <Icon size={DEFAULT_ICON_SIZE} icon={ic_format_bold} />
         </button>
         <button
           onPointerDown={e => onMarkClick(e, "italic")}
           className="tooltip-icon-button"
         >
-          <Icon size={defaultIconSize} icon={ic_format_italic} />
+          <Icon size={DEFAULT_ICON_SIZE} icon={ic_format_italic} />
         </button>
         <button
           onPointerDown={e => onMarkClick(e, "underline")}
           className="tooltip-icon-button"
         >
-          <Icon size={defaultIconSize} icon={ic_format_underlined} />
+          <Icon size={DEFAULT_ICON_SIZE} icon={ic_format_underlined} />
         </button>
         <button
           onPointerDown={e => onElementClick(e, "code")}
           className="tooltip-icon-button"
         >
-          <Icon size={defaultIconSize} icon={ic_code} />
+          <Icon size={DEFAULT_ICON_SIZE} icon={ic_code} />
         </button>
         <button
           onPointerDown={e => onElementClick(e, "ordered-list")}
           className="tooltip-icon-button"
         >
-          <Icon size={defaultIconSize} icon={ic_format_list_numbered} />
+          <Icon size={DEFAULT_ICON_SIZE} icon={ic_format_list_numbered} />
         </button>
         <button
           onPointerDown={e => onElementClick(e, "bulleted-list")}
           className="tooltip-icon-button"
         >
-          <Icon size={defaultIconSize} icon={ic_format_list_bulleted} />
+          <Icon size={DEFAULT_ICON_SIZE} icon={ic_format_list_bulleted} />
         </button>
       </FormatToolbar>
       <Editable
