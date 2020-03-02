@@ -1,17 +1,36 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { createEditor, Transforms, Editor, Text } from "slate";
-import { CodeElement, DefaultElement, Leaf } from "../components";
+import {
+  CodeElement,
+  DefaultElement,
+  Leaf,
+  FormatToolbar,
+  OrderedListElement,
+  UnorderedListElement,
+  ListItem
+} from "../components";
 
 import { Slate, Editable, withReact } from "slate-react";
+
+import Icon from "react-icons-kit";
+import { ic_format_bold } from "react-icons-kit/md/ic_format_bold";
+import { ic_format_italic } from "react-icons-kit/md/ic_format_italic";
+import { ic_format_underlined } from "react-icons-kit/md/ic_format_underlined";
+import { ic_format_list_numbered } from "react-icons-kit/md/ic_format_list_numbered";
+import { ic_format_list_bulleted } from "react-icons-kit/md/ic_format_list_bulleted";
+import { ic_code } from "react-icons-kit/md/ic_code";
 
 const TextEditor = () => {
   const editor = useMemo(() => withReact(createEditor()), []);
   const [value, setValue] = useState([
     {
       type: "paragraph",
-      children: [{ text: "A line of text in a paragraph" }]
+      children: [{ text: "" }]
     }
   ]);
+
+  const defaultIconSize = 26;
+  const LIST_TYPES = ["ordered-list", "bulleted-list"];
 
   const onKeyDown = event => {
     if (!event.ctrlKey) return;
@@ -19,34 +38,85 @@ const TextEditor = () => {
     switch (event.key) {
       case "b": {
         event.preventDefault();
-        const [match] = Editor.nodes(editor, {
-          match: n => n.bold
-        });
-
-        Transforms.setNodes(
-          editor,
-          { bold: match ? false : true },
-          { match: n => Text.isText(n), split: true }
-        );
+        toggleMark("bold");
+        break;
+      }
+      case "i": {
+        event.preventDefault();
+        toggleMark("italic");
+        break;
+      }
+      case "u": {
+        event.preventDefault();
+        toggleMark("underline");
         break;
       }
       case "'": {
         event.preventDefault();
-        const [match] = Editor.nodes(editor, {
-          match: n => n.type === "code"
-        });
-
-        Transforms.setNodes(
-          editor,
-          { type: match ? "paragraph" : "code" },
-          { match: n => Editor.isBlock(editor, n) }
-        );
+        transformBlock("code");
+        break;
+      }
+      case "o": {
+        event.preventDefault();
+        transformBlock("ordered-list");
+        break;
+      }
+      case "l": {
+        event.preventDefault();
+        transformBlock("bulleted-list");
         break;
       }
       default:
         return;
     }
   };
+
+  const onMarkClick = (e, type) => {
+    e.preventDefault();
+    toggleMark(type);
+  };
+
+  const onElementClick = (e, type) => {
+    e.preventDefault();
+    transformBlock(type);
+  };
+
+  const transformBlock = element => {
+    const [match] = Editor.nodes(editor, {
+      match: n => n.type === element
+    });
+
+    const isList = LIST_TYPES.includes(element);
+
+    Transforms.unwrapNodes(editor, {
+      match: n => LIST_TYPES.includes(n.type),
+      split: true
+    });
+
+    Transforms.setNodes(
+      editor,
+      { type: match ? "default" : isList ? "list-item" : element },
+      { match: n => Editor.isBlock(editor, n) }
+    );
+
+    if (!match && isList)
+      Transforms.wrapNodes(editor, { type: element, children: [] });
+  };
+
+  const toggleMark = useCallback(
+    mark => {
+      const [match] = Editor.nodes(editor, {
+        match: n => n[mark]
+      });
+
+      Transforms.setNodes(
+        editor,
+        { [mark]: match ? false : true },
+        { match: n => Text.isText(n), split: true }
+      );
+    },
+    [editor]
+  );
 
   const renderLeaf = useCallback(props => {
     return <Leaf {...props} />;
@@ -56,6 +126,12 @@ const TextEditor = () => {
     switch (props.element.type) {
       case "code":
         return <CodeElement {...props} />;
+      case "ordered-list":
+        return <OrderedListElement {...props} />;
+      case "bulleted-list":
+        return <UnorderedListElement {...props} />;
+      case "list-item":
+        return <ListItem {...props} />;
       default:
         return <DefaultElement {...props} />;
     }
@@ -63,7 +139,47 @@ const TextEditor = () => {
 
   return (
     <Slate editor={editor} value={value} onChange={value => setValue(value)}>
+      <FormatToolbar>
+        <button
+          onPointerDown={e => onMarkClick(e, "bold")}
+          className="tooltip-icon-button"
+        >
+          <Icon size={defaultIconSize} icon={ic_format_bold} />
+        </button>
+        <button
+          onPointerDown={e => onMarkClick(e, "italic")}
+          className="tooltip-icon-button"
+        >
+          <Icon size={defaultIconSize} icon={ic_format_italic} />
+        </button>
+        <button
+          onPointerDown={e => onMarkClick(e, "underline")}
+          className="tooltip-icon-button"
+        >
+          <Icon size={defaultIconSize} icon={ic_format_underlined} />
+        </button>
+        <button
+          onPointerDown={e => onElementClick(e, "code")}
+          className="tooltip-icon-button"
+        >
+          <Icon size={defaultIconSize} icon={ic_code} />
+        </button>
+        <button
+          onPointerDown={e => onElementClick(e, "ordered-list")}
+          className="tooltip-icon-button"
+        >
+          <Icon size={defaultIconSize} icon={ic_format_list_numbered} />
+        </button>
+        <button
+          onPointerDown={e => onElementClick(e, "bulleted-list")}
+          className="tooltip-icon-button"
+        >
+          <Icon size={defaultIconSize} icon={ic_format_list_bulleted} />
+        </button>
+      </FormatToolbar>
       <Editable
+        placeholder="Digite o seu texto."
+        spellCheck
         renderLeaf={renderLeaf}
         renderElement={renderElement}
         onKeyDown={event => {
