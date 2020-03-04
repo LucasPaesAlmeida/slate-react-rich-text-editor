@@ -7,7 +7,8 @@ import {
   FormatToolbar,
   OrderedListElement,
   UnorderedListElement,
-  ListItem
+  ListItem,
+  ImageElement
 } from "../components";
 
 import { Slate, Editable, withReact } from "slate-react";
@@ -111,6 +112,8 @@ const TextEditor = () => {
         return <UnorderedListElement {...props} />;
       case "list-item":
         return <ListItem {...props} />;
+      case "image":
+        return <ImageElement {...props} />;
       default:
         return <DefaultElement {...props} />;
     }
