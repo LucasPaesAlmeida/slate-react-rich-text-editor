@@ -1,5 +1,8 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { createEditor, Transforms, Editor, Text } from "slate";
+
+import { Slate, Editable, withReact } from "slate-react";
+
 import {
   CodeElement,
   DefaultElement,
@@ -11,7 +14,7 @@ import {
   ImageElement
 } from "../components";
 
-import { Slate, Editable, withReact } from "slate-react";
+import withImages from "../helpers/WithImages";
 
 import Icon from "react-icons-kit";
 import { ic_format_bold } from "react-icons-kit/md/ic_format_bold";
@@ -22,7 +25,7 @@ import { ic_format_list_bulleted } from "react-icons-kit/md/ic_format_list_bulle
 import { ic_code } from "react-icons-kit/md/ic_code";
 
 const TextEditor = () => {
-  const editor = useMemo(() => withReact(createEditor()), []);
+  const editor = useMemo(() => withImages(withReact(createEditor())), []);
   const [value, setValue] = useState([
     {
       type: "paragraph",
