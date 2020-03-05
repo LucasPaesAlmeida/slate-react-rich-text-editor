@@ -14,7 +14,7 @@ import {
   ImageElement
 } from "../components";
 
-import withImages from "../helpers/WithImages";
+import withImages, { insertImage } from "../helpers/WithImages";
 
 import Icon from "react-icons-kit";
 import { ic_format_bold } from "react-icons-kit/md/ic_format_bold";
@@ -23,6 +23,7 @@ import { ic_format_underlined } from "react-icons-kit/md/ic_format_underlined";
 import { ic_format_list_numbered } from "react-icons-kit/md/ic_format_list_numbered";
 import { ic_format_list_bulleted } from "react-icons-kit/md/ic_format_list_bulleted";
 import { ic_code } from "react-icons-kit/md/ic_code";
+import { ic_image } from "react-icons-kit/md/ic_image"
 
 const TextEditor = () => {
   const editor = useMemo(() => withImages(withReact(createEditor())), []);
@@ -63,6 +64,12 @@ const TextEditor = () => {
     e.preventDefault();
     transformBlock(type);
   };
+
+  const promptForImage = () => {
+    const url = window.prompt('Enter the URL of the image:')
+    if (!url) return
+      insertImage(editor, url)
+  }
 
   const transformBlock = element => {
     const [match] = Editor.nodes(editor, {
@@ -160,6 +167,12 @@ const TextEditor = () => {
           className="tooltip-icon-button"
         >
           <Icon size={DEFAULT_ICON_SIZE} icon={ic_format_list_bulleted} />
+        </button>
+        <button
+          onPointerDown={e => {e.preventDefault(); promptForImage()}}
+          className="tooltip-icon-button"
+        >
+          <Icon size={DEFAULT_ICON_SIZE} icon={ic_image} />
         </button>
       </FormatToolbar>
       <Editable

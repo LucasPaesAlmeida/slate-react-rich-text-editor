@@ -3,21 +3,21 @@ import { Transforms } from "slate";
 import imageExtensions from "image-extensions";
 import isUrl from "is-url"
 
+const insertImage = (editor, url) => {
+  Transforms.insertNodes(editor,
+    {type: 'image', url, description: "", children:[""]}
+  )
+}
+
+const isImageUrl = url => {
+  if(!url) return false;
+  if(!isUrl(url)) return false;
+  const ext = new URL(url).pathname.split(".").pop();
+  return imageExtensions.includes(ext);
+}
+
 const withImages = editor => {
   const { insertData, isVoid } = editor;
-
-  const insertImage = url => {
-    Transforms.insertNodes(editor,
-      {type: 'image', url, description: ""}
-    )
-  }
-
-  const isImageUrl = url => {
-    if(!url) return false;
-    if(!isUrl(url)) return false;
-    const ext = new URL(url).pathname.split(".").pop();
-    return imageExtensions.includes(ext);
-  }
 
   editor.isVoid = element => {
     return element.type === "image" ? true : isVoid(element);
@@ -35,14 +35,14 @@ const withImages = editor => {
         if (mime === "image") {
           reader.addEventListener("load", () => {
             const url = reader.result;
-            insertImage(url);
+            insertImage(editor, url);
           })
 
           reader.readAsDataURL(file);
         }
       }
     } else if (isImageUrl(text)) {
-      insertImage(text);
+      insertImage(editor, text);
     } else {
       insertData(data);
     }
@@ -51,4 +51,5 @@ const withImages = editor => {
   return editor;
 }
 
+export { insertImage};
 export default withImages;
